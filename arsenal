@@ -1,0 +1,85 @@
+local ImGui = require 'imgui'
+
+function calcularDistancia(x1, y1, x2, y2)
+    return math.sqrt((x2 - x1)^2 + (y2 - y1)^2)
+end
+
+function encontrarAlvoMaisProximo(playerX, playerY, alvos)
+    local alvoMaisProximo = nil
+    local menorDistancia = nil
+
+    for _, alvo em ipairs(alvos) do
+        local distancia = calcularDistancia(playerX, playerY, alvo.x, alvo.y)
+        if menorDistancia == nil ou distancia < menorDistancia então
+            menorDistancia = distancia
+            alvoMaisProximo = alvo
+        end
+    end
+
+    return alvoMaisProximo
+end
+
+function ajustarMira(player, alvo)
+    if alvo ~= nil então
+        player.miraX = alvo.x
+        player.miraY = alvo.y
+    end
+end
+
+function desenharInterface(player, alvos)
+    local alvoSelecionado = 1
+
+    ImGui.Begin("Painel de Controle")
+    ImGui.Text("Posição do Jogador: (" .. player.x .. ", " .. player.y .. ")")
+
+    if ImGui.BeginCombo("Selecionar Alvo", alvos[alvoSelecionado].nome) então
+        for i, alvo em ipairs(alvos) do
+            if ImGui.Selectable(alvo.nome, i == alvoSelecionado) então
+                alvoSelecionado = i
+            end
+        end
+        ImGui.EndCombo()
+    end
+
+    local alvo = alvos[alvoSelecionado]
+    ImGui.Text("Alvo: " .. alvo.nome)
+    ImGui.Text("Posição: (" .. alvo.x .. ", " .. alvo.y .. ")")
+    ImGui.Text("Vida: " .. alvo.vida)
+    ImGui.ProgressBar(alvo.vida / 100, ImVec2(0.0, 0.0), "Vida")
+
+    if ImGui.Button("Ajustar Mira") então
+        ajustarMira(player, alvo)
+    end
+
+    ImGui.End()
+end
+
+local pontos = 0
+
+function acertarAlvo(player, alvos)
+    for _, alvo em ipairs(alvos) do
+        if player.miraX == alvo.x e player.miraY == alvo.y então
+            pontos = pontos + 10
+            print("Você acertou " .. alvo.nome .. "! Pontos: " .. pontos)
+        end
+    end
+end
+
+local player = {x = 100, y = 100, miraX = 0, miraY = 0}
+local alvos = {
+    {nome = "Inimigo1", x = 150, y = 150, vida = 70},
+    {nome = "Inimigo2", x = 200, y = 200, vida = 50},
+    {nome = "Inimigo3", x = 120, y = 180, vida = 90}
+}
+
+function main()
+    ajustarMira(player, alvos)
+    desenharInterface(player, alvos)
+    acertarAlvo(player, alvos)
+    print("Nova posição da mira: ", player.miraX, player.miraY)
+    print("Pontuação total: ", pontos)
+end
+
+while true do
+    main()
+end
